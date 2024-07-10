@@ -9,5 +9,4 @@ import com.storage.poc.model.Arquivo;
 
 @Repository
 public interface ArquivoRepository extends JpaRepository<Arquivo, Long> {
-	List<Arquivo> findByProntuarioId(Long prontuarioId);
 }

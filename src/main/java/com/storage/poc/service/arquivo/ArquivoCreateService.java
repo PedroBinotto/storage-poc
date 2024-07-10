@@ -22,21 +22,19 @@ public class ArquivoCreateService {
 	private final ProntuarioRepository prontuarioRepository;
 
 	@Transactional
-	public Arquivo create(String filename, byte[] data, Long prontuarioId) throws IOException {
+	public Arquivo create(byte[] data, Long prontuarioId) throws IOException {
 		val arquivo = new Arquivo();
+		val tamanho = (long) data.length;
 		val hash = this.arquivoHashService.hash(data);
+		val nomeArquivo = hash + "_" + tamanho;
 
 		arquivo.setProntuario(prontuarioRepository.getReferenceById(prontuarioId));
-		arquivo.setTamanho((long) data.length);
-		arquivo.setNome(filename);
+		arquivo.setTamanho(tamanho);
+		arquivo.setNome(nomeArquivo);
 		arquivo.setHash(hash);
 
-		val storageFilename = hash + "_" + arquivo.getTamanho();
-
-		this.storageWriteService.write(storageFilename, data);
+		this.storageWriteService.write(nomeArquivo, data);
 
 		return this.arquivoRepository.save(arquivo);
 	}
-
-
 }

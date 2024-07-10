@@ -22,32 +22,33 @@ import com.storage.poc.repository.arquivo.ArquivoRepository;
 import com.storage.poc.service.arquivo.ArquivoCreateService;
 import com.storage.poc.service.storage.StorageReadService;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/{prontuarioId}/arquivos")
+@RequestMapping("/api")
 public class ApplicationController {
 	private final ArquivoCreateService arquivoCreateService;
 	private final StorageReadService storageReadService;
 	private final ArquivoRepository arquivoRepository;
 
-	@PostMapping("/{nomeArquivo}")
+	@PostMapping("/{prontuarioId}/arquivos")
 	public ResponseEntity<Arquivo> saveArquivo(
 			@PathVariable Long prontuarioId,
-			@PathVariable String nomeArquivo,
 			@RequestPart MultipartFile pdf
 	) throws IOException {
 		return ResponseEntity
 				.status(CREATED)
-				.body(this.arquivoCreateService.create(nomeArquivo, pdf.getBytes(), prontuarioId));
+				.body(this.arquivoCreateService.create(pdf.getBytes(), prontuarioId));
 	}
 
-	@GetMapping("/{arquivoId}")
-	public ResponseEntity<byte[]> getArquivos(
-			@PathVariable Long prontuarioId,
+	@GetMapping("/arquivos/{arquivoId}")
+	public ResponseEntity<byte[]> getArquivo(
 			@PathVariable Long arquivoId
 	) throws IOException {
-		val arquivo = arquivoRepository.findById(arquivoId).get();
-		val response = storageReadService.read(arquivo.getHash() + "_" + arquivo.getTamanho());
-		return ResponseEntity.ok(response);
+		val arquivo = arquivoRepository
+				.findById(arquivoId)
+				.orElseThrow(EntityNotFoundException::new);
+		return ResponseEntity.ok(storageReadService.read(arquivo.getHash() + "_" + arquivo.getTamanho()));
 	}
 }
